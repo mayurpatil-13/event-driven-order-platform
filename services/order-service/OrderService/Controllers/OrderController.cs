@@ -5,7 +5,7 @@ using OrderService.Interfaces;
 namespace OrderService.Controllers
 {
     [ApiController]
-    [Route("orders")]
+    [Route("api/orders")]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
@@ -20,7 +20,17 @@ namespace OrderService.Controllers
        {
               try
               {
-                var order = await _orderService.CreateOrder(request);
+                Console.WriteLine($"Received CreateOrder request for a: {User.Claims}, b: {User.FindFirst("id")}");
+                foreach (var claim in User.Claims)
+                {
+                    Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
+                }
+                var customerId = User.FindFirst("id")?.Value ?? string.Empty;
+                if (customerId == string.Empty)
+                {
+                    return Unauthorized(new { error = "Customer ID is missing in token" });
+                }
+                var order = await _orderService.CreateOrder(request, customerId);
                 return CreatedAtAction(nameof(CreateOrder), new { id = order.Id }, order);
               }
               catch (Exception ex)
@@ -28,13 +38,33 @@ namespace OrderService.Controllers
                 return BadRequest(new { error = ex.Message });
               }
          }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllOrders()
+        {
+              var customerId = User.FindFirst("id")?.Value ?? string.Empty;
+              if (customerId == string.Empty)
+              {
+                return Unauthorized(new { error = "Customer ID is missing in token" });
+              }
+              var orders = await _orderService.GetCustomerAllOrders(customerId);
+              return Ok(orders);
+        }
     
-          [HttpGet("{id}")]
-          public IActionResult GetOrder(Guid id)
-          {
-                // This is a placeholder for the GetOrder endpoint.
-                // You can implement this method to retrieve an order by its ID.
-                return Ok(new { message = $"GetOrder endpoint called with ID: {id}" });
-       }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetOrder(Guid id)
+        {
+              if (id == Guid.Empty)
+              {
+                return BadRequest(new { error = "Order ID is required" });
+              }
+              var customerId = User.FindFirst("id")?.Value ?? string.Empty;
+              if (customerId == string.Empty)
+              {
+                return Unauthorized(new { error = "Customer ID is missing in token" });
+              }
+              var order = await _orderService.GetOrderById(customerId,id);
+              return Ok(order);
+        }
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using OrderService.Data;
 using OrderService.Dtos;
 using OrderService.Interfaces;
@@ -20,7 +21,7 @@ namespace OrderService.Services
             _kafkaProducer = kafkaProducer;
         }
 
-        public async Task<Order> CreateOrder(CreateOrderRequest request)
+        public async Task<Order> CreateOrder(CreateOrderRequest request, string customerId)
         {
             var order = new Order
             {
@@ -29,6 +30,7 @@ namespace OrderService.Services
                 UpdatedAt = DateTime.UtcNow,
                 OrderDate = DateTime.UtcNow,
                 Location = request.Location,
+                CustomerId = customerId,
                 CustomerName = request.CustomerName,
                 CustomerEmail = request.CustomerEmail,
                 OrderStatus = OrderStatus.Pending
@@ -66,6 +68,28 @@ namespace OrderService.Services
                     Quantity = item.Quantity
                 })]
             });
+
+            return order;
+        }
+
+        public async Task<List<Order>> GetAllOrders()
+        {
+            return await _dbContext.Orders.ToListAsync();
+        }
+
+        public async Task<List<Order>> GetCustomerAllOrders(string customerId)
+        {
+            var orders = _dbContext.Orders.AsQueryable();
+            orders = orders.Where(o => o.CustomerId == customerId);
+
+            return await orders.ToListAsync();
+        }
+
+        public async Task<Order> GetOrderById(string customerId, Guid id)
+        {
+            var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.Id == id && o.CustomerId == customerId);
+            if (order == null)
+                throw new InvalidOperationException("Order not found");
 
             return order;
         }

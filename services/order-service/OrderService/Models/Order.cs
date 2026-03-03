@@ -17,6 +17,7 @@ namespace OrderService.Models
         public string Location { get; set; } = string.Empty;
         public string TransactionId { get; set; } = string.Empty;
         public OrderStatus OrderStatus { get; set; }
+        public string CustomerId { get; set; } = string.Empty;
         public string CustomerName { get; set; } = string.Empty;
         public string CustomerEmail { get; set; } = string.Empty;
 

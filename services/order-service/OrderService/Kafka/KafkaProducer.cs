@@ -17,6 +17,7 @@ namespace OrderService.Kafka
             var producerConfig = new ProducerConfig
             {
                 BootstrapServers = _config["Kafka:BootstrapServers"],
+                AllowAutoCreateTopics = true,
                 // Acks = Acks.All,
                 // EnableIdempotence = true,
                 // MessageSendMaxRetries = 3,

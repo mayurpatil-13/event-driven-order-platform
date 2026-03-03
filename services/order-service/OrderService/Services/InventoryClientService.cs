@@ -13,7 +13,7 @@ public class InventoryClientService : IInventoryClient
 
     public async Task<ProductResponse> GetProduct(Guid productId)
     {
-        var response = await _httpClient.GetAsync($"http://localhost:5194/api/products/{productId}");
+        var response = await _httpClient.GetAsync($"http://localhost:5238/api/products/{productId}");
         response.EnsureSuccessStatusCode();
 
         var product = await response.Content.ReadFromJsonAsync<ProductResponse>();
