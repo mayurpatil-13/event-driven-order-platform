@@ -2,8 +2,6 @@ import { User } from "../models/user.model.js";
 import { hashPassword, comparePasswords } from "../utils/password.util.js";
 import { generateToken, generateRefreshToken } from "../services/token.service.js";
 import jwt from "jsonwebtoken";
-import cookieParser from "cookie-parser";
-
 const options ={
     httpOnly: true,
     secure: true
