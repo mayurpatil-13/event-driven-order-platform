@@ -1,7 +1,9 @@
 public enum OrderStatus
 {
     Pending,
-    confirmed,
+    InventoryReserved,
+    Failed,
+    Confirmed,
     Shipped,
     Delivered,
     Cancelled
@@ -22,6 +24,8 @@ namespace OrderService.Models
         public string CustomerEmail { get; set; } = string.Empty;
 
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+
+        public string? Message { get; set; } = string.Empty;
 
     }
 }

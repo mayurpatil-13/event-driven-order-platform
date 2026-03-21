@@ -1,4 +1,6 @@
+using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
+using OrderProcessorWorker.Models;
 using OrderService.Data;
 using OrderService.Dtos;
 using OrderService.Interfaces;
@@ -51,17 +53,16 @@ namespace OrderService.Services
 
                 order.OrderItems.Add(orderItem);
                 order.TotalPrice += orderItem.Quantity * orderItem.UnitPrice;
+                order.OrderStatus = OrderStatus.Pending;
             }
 
             _dbContext.Orders.Add(order);
             await _dbContext.SaveChangesAsync();
 
-            await _kafkaProducer.PublishOrderCreatedEvent(new OrderCreatedEvent
+            await _kafkaProducer.PublishOrderRequestedEvent(new OrderRequestedEvent
             {
                 OrderId = order.Id,
-                CustomerName = order.CustomerName,
-                CustomerEmail = order.CustomerEmail,
-                TotalPrice = order.TotalPrice,
+                CustomerId = order.CustomerId,
                 Items = [.. order.OrderItems.Select(item => new OrderItemEvent
                 {
                     ProductId = item.ProductId,
@@ -92,6 +93,36 @@ namespace OrderService.Services
                 throw new InvalidOperationException("Order not found");
 
             return order;
+        }
+
+        public async Task UpdateOrderStatus(OrderUpdateEvent orderUpdateEvent)
+        {
+            var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.Id == orderUpdateEvent.OrderId);
+            if (order == null)
+                throw new InvalidOperationException("Order not found");
+                
+            if (!orderUpdateEvent.IsSuccess)
+            {
+                var failedProducts = new List<Guid>();
+                orderUpdateEvent.InventoryResults.ForEach(result =>
+                {
+                    if (!result.Success)
+                    {
+                        Console.WriteLine($"Insufficient inventory for ProductId: {result.ProductId}");
+                        failedProducts.Add(result.ProductId);
+                    }
+                });
+                order.OrderStatus = OrderStatus.Failed;
+                order.Message = "Failed to update order status due to insufficient inventory for products: " + string.Join(", ", failedProducts);
+            }
+            else
+            {
+                order.OrderStatus = OrderStatus.Confirmed;
+                order.Message = "Order confirmed successfully.";
+            }
+            order.UpdatedAt = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

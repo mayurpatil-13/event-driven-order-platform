@@ -66,5 +66,22 @@ namespace OrderService.Controllers
               var order = await _orderService.GetOrderById(customerId,id);
               return Ok(order);
         }
+
+        [HttpGet("OrderStatus/{id}")]
+        public async Task<IActionResult> GetOrderStatus(Guid id)
+        {
+              if (id == Guid.Empty)
+              {
+                return BadRequest(new { error = "Order ID is required" });
+              }
+              var customerId = User.FindFirst("id")?.Value ?? string.Empty;
+              if (customerId == string.Empty)
+              {
+                return Unauthorized(new { error = "Customer ID is missing in token" });
+              }
+              var order = await _orderService.GetOrderById(customerId,id);
+              return Ok(new { order, order.Message });
+        }
+
     }
 }

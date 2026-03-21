@@ -1,3 +1,4 @@
+using OrderProcessorWorker.Models;
 using OrderService.Dtos;
 using OrderService.Models;
 
@@ -9,4 +10,5 @@ public interface IOrderService
     Task<List<Order>> GetAllOrders();
     Task<List<Order>> GetCustomerAllOrders(string customerId);
     Task<Order> GetOrderById(string customerId, Guid id);
+    Task UpdateOrderStatus(OrderUpdateEvent orderUpdateEvent);
 }

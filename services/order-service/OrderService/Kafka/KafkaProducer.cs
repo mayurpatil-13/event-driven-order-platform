@@ -32,5 +32,26 @@ namespace OrderService.Kafka
             });
             Console.WriteLine("📩 OrderCreated event published: " + message);
         }
+
+        public async Task PublishOrderRequestedEvent(OrderRequestedEvent orderRequestedEvent)
+        {
+            var producerConfig = new ProducerConfig
+            {
+                BootstrapServers = _config["Kafka:BootstrapServers"],
+                AllowAutoCreateTopics = true,
+                // Acks = Acks.All,
+                // EnableIdempotence = true,
+                // MessageSendMaxRetries = 3,
+                // RetryBackoffMs = 1000
+            };
+            var producer = new ProducerBuilder<Null, string>(producerConfig).Build();
+            var topic = _config["Kafka:OrderRequestedTopic"];
+            var message = JsonSerializer.Serialize(orderRequestedEvent);
+            await producer.ProduceAsync(topic, new Message<Null, string>
+            {
+                Value = message
+            });
+            Console.WriteLine("📩 OrderRequested event published: " + message);
+        }
     }
 }

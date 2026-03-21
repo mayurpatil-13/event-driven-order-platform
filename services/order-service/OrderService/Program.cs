@@ -56,6 +56,7 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 builder.Services.AddHttpClient<IInventoryClient, InventoryClientService>();
 builder.Services.AddScoped<IOrderService, OrderService.Services.OrderService>();
 builder.Services.AddScoped<KafkaProducer>();
+builder.Services.AddHostedService<OrderUpdatedConsumer>();
 
 var app = builder.Build();
 
