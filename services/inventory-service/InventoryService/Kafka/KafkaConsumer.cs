@@ -1,3 +1,5 @@
+// Legacy code - not used anymore
+
 using System.Text.Json;
 using Confluent.Kafka;
 using Inventory.Kafka;

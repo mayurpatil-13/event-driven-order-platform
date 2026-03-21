@@ -1,7 +1,6 @@
 using System.Text;
 using InventoryService.Data;
 using InventoryService.Interfaces;
-using InventoryService.Kafka;
 using InventoryService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -74,8 +73,11 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("Default"),
     new MySqlServerVersion(new Version(8, 0, 26))));
-builder.Services.AddHostedService<KafkaConsumer>();
+
+// Legacy code - not used anymore
+// builder.Services.AddHostedService<KafkaConsumer>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IInventoryService, InventoryService.Services.InventoryService>();
 
 var app = builder.Build();
 

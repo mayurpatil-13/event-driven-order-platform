@@ -1,3 +1,5 @@
+// Legacy code - not used anymore
+
 using Microsoft.EntityFrameworkCore;
 using InventoryService.Models;
 
